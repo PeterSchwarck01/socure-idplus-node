@@ -56,7 +56,7 @@ import org.forgerock.openam.plugins.PluginException;
  */
 public class SocureIdPlusAuthPlugin extends AbstractNodeAmPlugin {
 
-    static private final String currentVersion = "0.0.0";
+    static private final String currentVersion = "1.0.0";
 
     /**
      * Specify the Map of list of node classes that the plugin is providing. These will then be installed and
