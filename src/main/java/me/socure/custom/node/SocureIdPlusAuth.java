@@ -16,8 +16,11 @@
 
 package me.socure.custom.node;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,6 +145,10 @@ public class SocureIdPlusAuth extends AbstractDecisionNode implements Node {
                 .build();
         } catch (Exception e) {
             logger.error(loggerPrefix + "Error processing request", e);
+            context.getStateFor(this).putShared(loggerPrefix + "Exception", new Date() + ": " + e.getMessage());
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            context.getStateFor(this).putShared(loggerPrefix + "StackTrace", new Date() + ": " + sw.toString());
             return goToAction(Decision.Error)
                 .withErrorMessage(e.getMessage())
                 .build();

@@ -16,7 +16,10 @@
 
 package me.socure.custom.node;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -102,7 +105,7 @@ public class SocureDocumentVerificationNode extends AbstractDecisionNode impleme
             List<HiddenValueCallback> hiddenValues = context.getCallbacks(HiddenValueCallback.class);
 
             if (hiddenValues.isEmpty()) {
-                logger.warn("Callbacks are missing. Restart the document verification");
+                logger.warn(loggerPrefix + "Callbacks are missing. Restart the document verification");
                 return buildDocvCallback(context);
             }
             String docvData = getHiddenCallbackValue(CALLBACK_DOCV_ID,context) ;
@@ -125,6 +128,10 @@ public class SocureDocumentVerificationNode extends AbstractDecisionNode impleme
                 .build();
         } catch (Exception e) {
             logger.error(loggerPrefix + "Error processing document callback", e);
+            context.getStateFor(this).putShared(loggerPrefix + "Exception", new Date() + ": " + e.getMessage());
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            context.getStateFor(this).putShared(loggerPrefix + "StackTrace", new Date() + ": " + sw.toString());
             return goToAction(Decision.Error)
                 .withHeader("Error Processing request")
                 .withErrorMessage(e.getMessage())
