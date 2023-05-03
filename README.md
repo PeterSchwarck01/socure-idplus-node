@@ -13,71 +13,109 @@
  *
  * Copyright 2022 ForgeRock AS.
 -->
-# SocureId+ Identity Verification Node
 
-An Identify Verification node for ForgeRock's [Identity Platform][forgerock_platform] 7.2.0 and above. Socure’s revolutionary ID+ platform utilizes every element of identity, natively orchestrated by advanced AI/ML, to maximize accuracy, reduce false positives, and eliminate the need for disparate products. 
+# Socure ID+ Identity Verification Nodes
 
-##What's in the package
-Once built and dropped into ForgeRock, 2 nodes will be available.
+Learn how to install and configure the Socure ID+ Identify Verification nodes for ForgeRock's [Identity Platform](forgerock_platform) 7.2.0 and later. 
 
-###SocureID+ authentication Node
-    Verifies collected user attribute using SocureID+ api and returns the decision 
-###Socure's Predictive Docv Node
-    Verifies the user document and returns the collected data 
-## Installations Steps
+## Overview 
 
-Copy the .jar file from the ../target directory into the ../web-container/webapps/openam/WEB-INF/lib directory where AM is deployed.  Restart the web container to pick up the new node.  The node will then appear in the authentication trees components palette.
+Socure’s revolutionary ID+ Platform utilizes every element of identity, natively orchestrated by advanced AI and ML, to maximize accuracy, reduce false positives, and eliminate the need for disparate products. 
 
+After you complete the build and configuration process with ForgeRock, the following 2 nodes will be available:
 
-**USAGE HERE**
+1. **SocureId+ Authentication Node**: Verifies the collected user attributes using Socure's ID+ API and returns a decision for the user identity.
+2. **Socure Predictive Docv Node**: Verifies a user's identity by authetnicating their government-issued ID. The collected data is then returned in the response, along with the Predictive Document Verification (DocV) results. 
 
-##User Journeys
+## Installation 
 
-The Socure/ForgeRock integration user journey supports both Identity Verification and Identity proofing.
+1. Copy the `.jar` file from the `../target` directory to the `../web-container/webapps/openam/WEB-INF/lib` directory where AM is deployed. 
+2. Restart the web container for the new node to become available. The node will then appear in the Authentication Tree components palette.
 
-Use Case : User registration flow
+## Use cases
 
-**SCREENSHOTS ARE GOOD LIKE BELOW**
+The Socure integration with ForgeRock supports both identity verification and identity proofing using the workflows in the sections below. 
 
-![ScreenShot](./screenshots/usecase1.png)
+![ID+ workflow](./screenshots/usecase1.png)
 
+### Use case: SocureId+ Authentication node
 
-The code in this repository has binary dependencies that live in the ForgeRock maven repository. Maven can be configured to authenticate to this repository by following the following [ForgeRock Knowledge Base Article](https://backstage.forgerock.com/knowledge/kb/article/a74096897).
+To verify a user's identity with the Socure's ID+ API, your Authentication Tree should be configured as follows: 
 
-Configuration:
+1. The Page Node gathers the attributes required to verify the user identity. 
+2. The SocureId+ node verifies the identity using the ID+ API and returns a simple decision outcome (reject, refer, resubmit, review, or accept) for the user identity. 
+    - If the decision is accept, the Create Object creates a resource with the information gathered by the previous nodes. The user is then automatically logged in after their identity is verified and the flow is successful. 
+    - If the decision is refer, the Socure Predictive DocV node can be initiated for a step up in authentication. See **Use case: Socure's Predictive Docv Node** below for more information. 
 
-## Configure SocureID+ Node
- SocureAPIEndpoint : Socure's endpoint detail available on developer.socure.com 
+### Use case: Socure Predictive Docv Node
 
-Socure API key : Follow these steps to obtain API key
+In use cases that require a step up in authentication, Socure Predictive DocV node can be used as an additional authentication source to authenticate the user's ID and verify their, then recommend if they should be accepted or rejected.
 
-To begin using Socure ID+, register online with Socure to obtain an API key, configure the API key, and then set up the ID+ module.
-This guide walks you through the required steps.
-##Step 1: Register with Socure
-1. Open https://dashboard.socure.com and select Create Account.
-2. Enter your name and contact information. Create a password, select an industry, and click Submit when ready. You will receive a confirmation email from Socure.
-3. Contact Socure’s Customer Service team to confirm your account has been set up.
-4. Log in to your account at https://dashboard.socure.com.
-5. Select Developers menu item and then ID+ Keys section
-6. In the API Keys section, all API Keys associated with either your production, certification or sandbox are shown.
-a. Copy the production key.
-7. In the IPs & Domains section, update the Allowed Domains field and set it to 0.0.0.0/1
-8. Click Update to save your changes.
+When implementing Socure's Predictive DocV node, your Authentication Tree should be configured as follows: 
 
-Modules : configure list of mobiles required to run on input user attributes. 
+1. The Page Node gathers the attributes required to verify the user identity. 
+2. The SocureId+ node verifies the identity using the ID+ API and returns a simple decision outcome (reject, refer, resubmit, review, or accept) for the user identity. 
+3. If the decision is refer, the SocureId+ node will initiate a step up authentication workflow using the Socure Predictive Document Verification (DocV) node and the DocV Web SDK. 
+4. The user follows the instructions in the DocV workflow to authenticate their government-issued ID and verify their identity. After the flow completes successfully, the Create Object will create a resource with the information gathered by the previous nodes. The user is then automatically logged in after their identity is verified and the flow is successful.
 
-Attributes : Map for picking ForgeRockLDAP Attributes to ID+ Api. The KEY should be the Socure attribute JSON key and the VALUE should be the corresponding ForgeRock LDAP Attribute.
-![ScreenShot](./screenshots/socureIdPlusConfig.png)
-![ScreenShot](./screenshots/attributes.png)
- 
-##Configure Socure Predictive Docv
+## Configuration
 
-Socure API endpoint : get the endpoint detail from your socure account https://dashboard.socure.com/
+The code in this repository has binary dependencies that live in the ForgeRock Maven repository. Maven can be configured to authenticate to this repository by following the steps in the [ForgeRock Knowledge Base Article](https://backstage.forgerock.com/knowledge/kb/article/a74096897).
 
-Socure API key : Get the socure Api key from the https://dashboard.socure.com account as described in SocureID+ configuration guide
+### Prerequisites
 
-Socure web Api key : Get the web sdk Api key from the https://dashboard.socure.com account as described in SocureID+ configuration guide
+Before completing the configuration steps in the sections below, you will need to create a Socure account to retrieve your API key. 
 
-Web SDK URL : https://websdk.socure.com/bundle.js use this value for latest web sdk integration.
+#### Create an account
+
+1. Go to [Admin Dashboard](dashboard.socure.com).
+2. Click **Create Account**.
+3. Enter the requested information in the fields provided.
+4. Click **Submit**. 
+
+New accounts must be approved by Socure. Once approved, you will receive an email with a link to set your account password. The link will expire after 7 days.
+
+#### Configure your account
+
+1. Log in to [Admin Dashboard](dashboard.socure.com).
+2. On the **Account/Environment** menu, select **Production**, **Certification**, or **Sandbox**.
+3. Go to **Developers > IPs & Domains**, then click **API Access**.
+4. Click **New Domain**, then enter the IP address or domain in the **IP/Domains** field.
+5. Click **Create**.
+
+#### Retrieve your API Key
+
+1. Log in to [Admin Dashboard](dashboard.socure.com).
+2. Select an environment from the **Account/Environment** menu on the upper-right corner of the page.
+3. Go to **Developers > ID+ Keys**, then click the vertical ellipsis and select **Copy Key**.
+
+Socure provides a set of API keys for the Sandbox, Certification, and Production environments. Users must have the correct permissions enabled for their account to access their keys.
+
+### Configure SocureId+ Node
+
+Verifies the collected user attributes using Socure's ID+ API and returns a decision for the user identity.
+
+![Configure SocureId+ node](./screenshots/socureIdPlusConfig.png)
+![Attributes](./screenshots/attributes.png)
+
+| Configuration     | Description                                                                                                                                                   | Example                                                                                             |
+|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| Name              | A name for the node.                                                                                                                                          | SocureId+ Node                                                                                      |
+| SocureAPIEndpoint | The API URL path.                                                                                                                                             | https://sandbox.socure.com/api/3.0/EmailAuthScore                                                   |
+| SocureAPIKey      | Your API key for the environment you want to access. You can find your SDK key in Admin Dashboard.                                                            | SocureApiKey a1b234cd-xxxx-xxxx-xxxx-56abcdef6789                                                   |
+| modules           | A configurable list of ID+ modules that are called in the ID+ API call.                                                                                       | emailrisk, phonerisk, fraud, addressrisk, synthetic, decision, kyc                                  |
+| attributes        | Maps ForgeRockLDAP Attributes to ID+ API. The KEY should be the Socure attribute JSON key and the VALUE should be the corresponding ForgeRock LDAP Attribute. | streetAddress, city, zipCode, countryCode, email, ssn, lastName, dob, firstName, mobilePhone, state |
+
+### Configure Socure Predictive Docv node
+
+Verifies a user's identity by authetnicating their government-issued ID. The collected data is then returned in the response, along with the Predictive Document Verification (DocV) results. 
 
 ![ScreenShot](./screenshots/docv_config.png)
+
+| Configuration             | Description                                                                                        | Example                                           |
+|-------------------|----------------------------------------------------------------------------------------------------|---------------------------------------------------|
+| Name              | A name for the node.                                                                               | Socure Predictive DocV                            |
+| SocureAPIEndpoint | The API URL path.                                                                                  | https://sandbox.socure.com/api/3.0/EmailAuthScore |
+| SocureAPIKey      | Your API key for the environment you want to access. You can find your SDK key in Admin Dashboard. | SocureApiKey a1b234cd-xxxx-xxxx-xxxx-56abcdef6789 |
+| isDocVRequired    |                                                                                                    | true                                              |
+| websdkUrl         | The URL for the latest version of the DocV Web SDK.                                                | https://websdk.socure.com/bundle.js               |
